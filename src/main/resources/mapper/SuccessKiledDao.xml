@@ -1,0 +1,45 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.seckill.dao.SuccessKilledDao">
+    <insert id="insertSuccessKilled">
+        <!--主键冲突(seckill_id与iphone形成联合主键，
+        其中有一者不相同即可，即一个用户不可
+        以秒杀同一个商品多次)，
+        报错-->ikol;
+--   插入ignore 就不返回主键冲突异常，直接返回0
+        INSERT ignore INTO
+        success_killed(seckill_id,user_phone)
+        VALUES
+        (#{seckillId},#{userPhone})
+    </insert>
+    <select id="queryByIdWithSeckill" resultType="SuccessKilled">
+      <!--
+      根据id查询SuccessKilled并且携带Seckill实体
+      如何告诉MyBatis把结果映射到SuccessKilled同时映射
+      seckill属性
+      inner join success_seckill和seckill两张表相同id
+      且传入id等于successid，就返回两张表对应那一行的数据，
+      即返回两行，一行是seckill表，一行是success_seckill表
+      然后successkiled中有成员变量seckill,mybatis顺手帮忙赋值实体化了
+      -->
+        <!--可以自由控制SQL-->
+       SELECT
+        sk.seckill_id,
+        sk.user_phone,
+        sk.create_time,
+        sk.state,
+        s.seckill_id  as "seckill.seckill_id",
+        s.name as "seckill.name" ,
+        s.number as "seckill.number",
+        s.start_time as "seckill.start_time",
+        s.end_time as "seckill.end_time",
+        s.create_time as "seckill.create_time"
+        FROM success_killed sk
+        INNER JOIN seckill s ON sk.seckill_id=s.seckill_id
+        WHERE sk.seckill_id=#{seckillId} AND sk.user_phone=#{userPhone}
+    </select>
+
+
+
+</mapper>
